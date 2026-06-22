@@ -1,0 +1,6 @@
+Material_Code,Material_Description,Batch_Number,Product_Family,Available_Qty,UOM,Manufacturing_Date,Expiry_Date,Quality_Status,Storage_Location,Packaging_Format,Inventory_Value,Allergen_Status,Claims_Certifications,SLOB_Category
+GJ-40,Garlic Juice 40%,GJ24088,Garlic Juice,900,kg,2025-11-01,2026-08-15,Released,CS-A1,Tote,12400,None,Conventional,At Risk
+GJ-40,Garlic Juice 40%,GJ24091,Garlic Juice,600,kg,2025-12-05,2026-12-30,Released,CS-A2,Drum,8500,None,Conventional,Slow Moving
+GJ-45,Garlic Juice 45%,GJ45012,Garlic Juice,1000,kg,2025-10-20,2026-09-10,Released,CS-B1,Tote,15000,None,Conventional,At Risk
+OJ-65,Onion Concentrate 65%,OJ65021,Onion Concentrate,700,kg,2025-09-15,2026-07-20,Released,CS-C1,Tote,9800,None,Conventional,At Risk
+GJ-40,Garlic Juice 40% QA Hold,GJ99999,Garlic Juice,500,kg,2025-08-01,2026-10-01,Blocked,CS-QA,Tote,6500,None,Conventional,Blocked

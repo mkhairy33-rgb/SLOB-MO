@@ -1,0 +1,3 @@
+Customer_Code,Customer_Name,Material_Code,Minimum_Shelf_Life_Days,Allowed_Packaging,Allowed_Claims,Disallowed_Claims,Allergen_Restrictions,Requires_Customer_Approval,Special_Notes
+CUST-001,Example Customer,GJ-40,90,Tote,Conventional,,None,No,Standard customer
+CUST-002,Strict Customer,GJ-40,180,Drum,Conventional,,None,Yes,Customer approval required for substitutions

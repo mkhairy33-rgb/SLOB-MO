@@ -1,0 +1,4 @@
+Required_Material_Code,Alternative_Material_Code,Equivalency_Type,Can_Blend,Can_Repack,QA_Approval_Required,Customer_Approval_Required,Comments
+GJ-40,GJ-40,Direct substitute,No,Yes,No,No,Same material
+GJ-40,GJ-45,Can be blended,Yes,No,Yes,Yes,Potential concentration adjustment required
+OJ-65,OJ-65,Direct substitute,No,Yes,No,No,Same material
