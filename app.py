@@ -8,29 +8,117 @@ from datetime import date, timedelta
 st.set_page_config(page_title="SLOB MRP Intelligence", page_icon="📊", layout="wide")
 
 st.markdown("""
+
 <style>
-.block-container {padding-top:1.2rem;}
-.hero{background:linear-gradient(135deg,#0f172a,#1e293b,#172554);border-radius:24px;padding:30px 34px;margin-bottom:20px;color:white}
-.hero h1{font-size:2.1rem;margin-bottom:.2rem}.hero p{color:#cbd5e1;margin:0}
-.metric-card{background:#fff;border:1px solid #dbe3ef;border-radius:18px;padding:18px;min-height:115px;box-shadow:0 8px 22px rgba(15,23,42,.06)}
-.metric-label{color:#64748b;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
-.metric-value{color:#0f172a;font-size:1.7rem;font-weight:900;margin-top:6px}.metric-sub{color:#64748b;font-size:.85rem}
-.card{background:#fff;border:1px solid #dbe3ef;border-radius:20px;padding:18px 20px;box-shadow:0 8px 22px rgba(15,23,42,.05);margin-bottom:12px}
-.card-title{font-weight:900;font-size:1.08rem;color:#0f172a;margin-top:10px}.card-sub{color:#64748b;font-size:.9rem;margin-bottom:10px}
-.badge{display:inline-block;padding:5px 11px;border-radius:999px;font-size:.76rem;font-weight:900}
-.high{color:#7f1d1d;background:#fee2e2;border:1px solid #fca5a5}.med{color:#78350f;background:#fef3c7;border:1px solid #fcd34d}
-.low{color:#14532d;background:#dcfce7;border:1px solid #86efac}.rank{color:#1e3a8a;background:#dbeafe;border:1px solid #93c5fd}
-.assess{color:#312e81;background:#ede9fe;border:1px solid #c4b5fd}
-.section-header{font-size:1.35rem;font-weight:900;color:#0f172a;margin-top:10px}.small-muted{color:#64748b;font-size:.88rem;margin-bottom:12px}
-.insight{border-left:5px solid #2563eb;background:#eff6ff;color:#1e3a8a;padding:13px 15px;border-radius:12px;margin-top:10px}
-.warn{border-left:5px solid #d97706;background:#fffbeb;color:#78350f;padding:13px 15px;border-radius:12px;margin-top:10px}
-.stButton > button{border-radius:12px;height:3rem;font-weight:900}
-
-.kpi-pill{display:inline-block;border-radius:999px;background:#f1f5f9;border:1px solid #cbd5e1;color:#0f172a;font-size:.78rem;font-weight:800;padding:5px 10px;margin-right:5px;margin-bottom:5px}
-.trace{background:#0f172a;color:#e5e7eb;border-radius:16px;padding:14px 16px;font-family:monospace;font-size:.82rem;white-space:pre-wrap}
-.good{border-left:5px solid #16a34a;background:#f0fdf4;color:#14532d;padding:13px 15px;border-radius:12px;margin-top:10px}
-
+:root{
+  --navy:#0F172A;
+  --slate:#334155;
+  --muted:#64748B;
+  --bg:#F8FAFC;
+  --card:#FFFFFF;
+  --line:#E2E8F0;
+  --blue:#2563EB;
+  --green:#16A34A;
+  --amber:#D97706;
+  --red:#DC2626;
+}
+.block-container{padding-top:1rem;padding-bottom:2.5rem;max-width:1480px}
+[data-testid="stSidebar"]{background:linear-gradient(180deg,#0F172A 0%,#111827 100%)}
+[data-testid="stSidebar"] *{color:#E5E7EB}
+[data-testid="stSidebar"] label{font-weight:800;color:#F8FAFC}
+[data-testid="stSidebar"] [data-baseweb="select"] *{color:#0F172A}
+[data-testid="stSidebar"] .stFileUploader div{color:#E5E7EB}
+hr{border-color:#E2E8F0}
+.hero{
+  background:
+    radial-gradient(circle at 12% 12%,rgba(37,99,235,.35),transparent 28%),
+    radial-gradient(circle at 82% 12%,rgba(22,163,74,.22),transparent 28%),
+    linear-gradient(135deg,#0F172A 0%,#1E293B 54%,#172554 100%);
+  border-radius:28px;
+  padding:32px 36px;
+  margin-bottom:18px;
+  color:white;
+  box-shadow:0 18px 50px rgba(15,23,42,.22);
+  border:1px solid rgba(255,255,255,.12);
+}
+.hero-eyebrow{font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.14em;color:#93C5FD;margin-bottom:8px}
+.hero h1{font-size:2.35rem;line-height:1.05;margin:0 0 8px 0;font-weight:950;letter-spacing:-.04em}
+.hero p{color:#CBD5E1;margin:0;font-size:1rem;max-width:920px}
+.hero-grid{display:grid;grid-template-columns:1.6fr .9fr;gap:18px;align-items:end}
+.hero-chip{display:inline-block;border-radius:999px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);padding:7px 12px;font-size:.78rem;font-weight:800;color:#E0F2FE;margin:4px}
+.section-header{font-weight:950;color:#0F172A;font-size:1.18rem;margin:24px 0 8px 0;letter-spacing:-.02em}
+.section-kicker{color:#64748B;font-size:.88rem;margin-top:-2px;margin-bottom:12px}
+.small-muted{color:#64748B;font-size:.9rem;margin-bottom:12px}
+.metric-card{
+  background:linear-gradient(180deg,#FFFFFF 0%,#F8FAFC 100%);
+  border:1px solid #E2E8F0;
+  border-radius:22px;
+  padding:18px 18px 15px 18px;
+  min-height:126px;
+  box-shadow:0 12px 32px rgba(15,23,42,.07);
+  position:relative;
+  overflow:hidden;
+}
+.metric-card:before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;width:5px;
+  background:linear-gradient(180deg,#2563EB,#16A34A);
+}
+.metric-label{color:#64748B;font-size:.74rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.metric-value{color:#0F172A;font-size:1.9rem;font-weight:950;margin-top:8px;letter-spacing:-.04em}
+.metric-sub{color:#64748B;font-size:.84rem;margin-top:5px}
+.metric-trend{display:inline-block;margin-top:8px;font-size:.76rem;font-weight:850;color:#0F172A;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:999px;padding:4px 9px}
+.card{
+  background:rgba(255,255,255,.98);
+  border:1px solid #E2E8F0;
+  border-radius:24px;
+  padding:20px 22px;
+  box-shadow:0 12px 34px rgba(15,23,42,.06);
+  margin-bottom:14px;
+}
+.card-title{font-weight:950;font-size:1.10rem;color:#0F172A;margin-top:8px;letter-spacing:-.02em}
+.card-sub{color:#64748B;font-size:.9rem;margin-bottom:10px}
+.decision-card{
+  border:1px solid #E2E8F0;
+  border-radius:24px;
+  padding:18px 20px;
+  background:linear-gradient(180deg,#FFFFFF,#F8FAFC);
+  box-shadow:0 12px 30px rgba(15,23,42,.06);
+  margin-bottom:14px;
+}
+.decision-title{font-size:1.1rem;font-weight:950;color:#0F172A;margin:10px 0 4px 0}
+.decision-meta{font-size:.86rem;color:#64748B;margin-bottom:10px}
+.insight{background:#F8FAFC;border:1px solid #E2E8F0;border-left:5px solid #2563EB;border-radius:16px;padding:13px 15px;color:#334155;margin-top:10px}
+.warn{background:#FFFBEB;border:1px solid #FDE68A;border-left:5px solid #D97706;border-radius:16px;padding:13px 15px;color:#78350F;margin-top:10px}
+.good{border-left:5px solid #16A34A;background:#F0FDF4;color:#14532D;padding:13px 15px;border-radius:16px;margin-top:10px;border:1px solid #BBF7D0}
+.badge{display:inline-block;padding:5px 11px;border-radius:999px;font-size:.73rem;font-weight:900;margin-right:5px;letter-spacing:.035em;text-transform:uppercase;border:1px solid transparent}
+.high{background:#FEF2F2;color:#991B1B;border-color:#FECACA}.med{background:#FFFBEB;color:#92400E;border-color:#FDE68A}.low{background:#ECFDF5;color:#065F46;border-color:#A7F3D0}
+.rank{background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE}.assess{background:#F1F5F9;color:#334155;border-color:#CBD5E1}
+.badge-dark{background:#0F172A;color:#F8FAFC;border-color:#0F172A}
+.badge-upload{background:#F0FDF4;color:#166534;border-color:#BBF7D0}
+.kpi-pill{display:inline-block;border-radius:999px;background:#F1F5F9;border:1px solid #CBD5E1;color:#0F172A;font-size:.78rem;font-weight:850;padding:6px 11px;margin-right:6px;margin-bottom:6px}
+.trace{background:#0F172A;color:#E5E7EB;border-radius:18px;padding:16px 18px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:.82rem;white-space:pre-wrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.empty-state{
+  background:linear-gradient(180deg,#FFFFFF,#F8FAFC);
+  border:1px dashed #CBD5E1;
+  border-radius:26px;
+  padding:36px;
+  text-align:center;
+  box-shadow:0 12px 34px rgba(15,23,42,.05);
+}
+.empty-state h2{font-size:1.45rem;color:#0F172A;font-weight:950;margin-bottom:8px}
+.empty-state p{color:#64748B;max-width:760px;margin:0 auto 14px auto}
+.readiness-wrap{height:16px;background:#E2E8F0;border-radius:999px;overflow:hidden;margin:10px 0 6px 0}
+.readiness-bar{height:16px;border-radius:999px;background:linear-gradient(90deg,#DC2626,#D97706,#16A34A)}
+div[data-testid="stDataFrame"]{border-radius:18px;overflow:hidden;border:1px solid #E2E8F0}
+.stPlotlyChart{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:22px;padding:10px;box-shadow:0 12px 28px rgba(15,23,42,.05)}
+button[kind="primary"], .stDownloadButton button{
+  border-radius:999px!important;
+  font-weight:850!important;
+}
 </style>
+
 """, unsafe_allow_html=True)
 
 REQUIRED_COLUMNS = [
@@ -701,14 +789,30 @@ def answer_slob_question(question, data):
 
 st.markdown("""
 <div class="hero">
-  <h1>SLOB MRP Intelligence</h1>
-  <p>SAP SLOB Toolkit-aligned SKU risk engine using Slow Moving, Excess, Obsolete, Discard, Reserve, Protected Stock and Strategic Critical logic.</p>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow">Enterprise SLOB Control Tower</div>
+      <h1>SLOB MRP Intelligence</h1>
+      <p>Anticipate, prioritize and reduce SLOB while staying aligned to SAP SLOB governance, reason-code discipline, mass-upload controls and owner-based action management.</p>
+    </div>
+    <div>
+      <span class="hero-chip">Governance-safe</span>
+      <span class="hero-chip">SAP/MRP aligned</span>
+      <span class="hero-chip">Prevention radar</span>
+      <span class="hero-chip">Action cockpit</span>
+    </div>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
-st.sidebar.markdown("## Data Input")
+st.sidebar.markdown("### SLOB MRP Intelligence")
+st.sidebar.caption("Control Tower · Prevention · Governance")
+st.sidebar.divider()
+st.sidebar.markdown("#### Data source")
 use_sample = st.sidebar.toggle("Use sample SAP/SLOB data", value=True)
 uploaded = st.sidebar.file_uploader("Upload SAP SLOB CSV", type=["csv"])
+st.sidebar.divider()
+st.sidebar.markdown("#### Navigation")
 view = st.sidebar.radio("View", [
     "Executive Control Tower",
     "Early Warning Radar",
@@ -746,12 +850,24 @@ if view == "Data Template":
     st.stop()
 
 if raw.empty:
-    st.info("Upload a CSV or activate sample SAP/SLOB data.")
+    st.markdown("""
+    <div class="empty-state">
+      <h2>Upload your SAP SLOB extract to start</h2>
+      <p>The application will calculate SLOB categories, risk, reason-code suggestions, prevention signals, action priorities, and SAP mass-upload readiness.</p>
+      <span class="kpi-pill">CSV format</span>
+      <span class="kpi-pill">SAP/MRP fields</span>
+      <span class="kpi-pill">SLOB governance controls</span>
+    </div>
+    """, unsafe_allow_html=True)
     st.stop()
 
 missing = [c for c in REQUIRED_COLUMNS if c not in raw.columns]
 if missing:
+    st.markdown('<div class="section-header">Input file validation</div>', unsafe_allow_html=True)
     st.error("Missing required columns: " + ", ".join(missing))
+    st.markdown("""
+    <div class="warn"><b>Action required:</b> align the uploaded CSV headers with the Data Template page or add a SAP-header mapping layer before upload.</div>
+    """, unsafe_allow_html=True)
     st.stop()
 
 data = calc_slob_categories(raw)
@@ -765,12 +881,18 @@ if view == "Executive Control Tower":
     obsolete_value = data["Obsolete_Value_GC"].sum()
     quick_wins = len(data[data["Impact_Effort_Rank"]=="Low Effort / High Impact"])
 
-    c1,c2,c3,c4,c5 = st.columns(5)
-    c1.markdown(f'<div class="metric-card"><div class="metric-label">Total Value</div><div class="metric-value">${total_value:,.0f}</div><div class="metric-sub">visible inventory</div></div>', unsafe_allow_html=True)
-    c2.markdown(f'<div class="metric-card"><div class="metric-label">Active Risk Value</div><div class="metric-value">${active_value:,.0f}</div><div class="metric-sub">assessment status active</div></div>', unsafe_allow_html=True)
-    c3.markdown(f'<div class="metric-card"><div class="metric-label">Excess Value</div><div class="metric-value">${excess_value:,.0f}</div><div class="metric-sub">calculated category</div></div>', unsafe_allow_html=True)
-    c4.markdown(f'<div class="metric-card"><div class="metric-label">Obsolete/Discard</div><div class="metric-value">${obsolete_value+discard_value:,.0f}</div><div class="metric-sub">calculated category</div></div>', unsafe_allow_html=True)
-    c5.markdown(f'<div class="metric-card"><div class="metric-label">Quick Wins</div><div class="metric-value">{quick_wins}</div><div class="metric-sub">low effort/high impact</div></div>', unsafe_allow_html=True)
+    high_risk_count = len(data[data["Risk_Level"]=="High"])
+    prevention_high_count = len(data[data["Prevention_Risk_Level"]=="High"])
+    check_data_count = len(data[data["Master_Data_Status"]=="CHECK_DATA"])
+    manual_review_count = len(data[data["Suggested_Discard_Reason_Code"]=="MANUAL_REVIEW"])
+
+    c1,c2,c3,c4,c5,c6 = st.columns(6)
+    c1.markdown(f'<div class="metric-card"><div class="metric-label">Total Inventory Value</div><div class="metric-value">${total_value:,.0f}</div><div class="metric-sub">visible inventory in uploaded file</div><div class="metric-trend">Control base</div></div>', unsafe_allow_html=True)
+    c2.markdown(f'<div class="metric-card"><div class="metric-label">Active SLOB Risk</div><div class="metric-value">${active_value:,.0f}</div><div class="metric-sub">assessment status active</div><div class="metric-trend">Needs owner action</div></div>', unsafe_allow_html=True)
+    c3.markdown(f'<div class="metric-card"><div class="metric-label">High-Risk SKUs</div><div class="metric-value">{high_risk_count}</div><div class="metric-sub">risk score ≥ 70</div><div class="metric-trend">Prioritize first</div></div>', unsafe_allow_html=True)
+    c4.markdown(f'<div class="metric-card"><div class="metric-label">Quick Wins</div><div class="metric-value">{quick_wins}</div><div class="metric-sub">low effort / high impact</div><div class="metric-trend">Fast value capture</div></div>', unsafe_allow_html=True)
+    c5.markdown(f'<div class="metric-card"><div class="metric-label">Prevention Radar</div><div class="metric-value">{prevention_high_count}</div><div class="metric-sub">high early-warning SKUs</div><div class="metric-trend">Avoid future SLOB</div></div>', unsafe_allow_html=True)
+    c6.markdown(f'<div class="metric-card"><div class="metric-label">Governance Blocks</div><div class="metric-value">{check_data_count + manual_review_count}</div><div class="metric-sub">CHECK_DATA + manual review</div><div class="metric-trend">Fix before upload</div></div>', unsafe_allow_html=True)
 
     summary = executive_summary(data)
     st.markdown('<div class="section-header">AI Executive Summary</div>', unsafe_allow_html=True)
@@ -848,15 +970,35 @@ if view == "Executive Control Tower":
         fig_reason.update_layout(template="plotly_white", height=360, margin=dict(l=20,r=20,t=55,b=20), xaxis_tickprefix="$", xaxis_tickformat=",.0f", yaxis={"categoryorder":"total ascending"})
         st.plotly_chart(fig_reason, use_container_width=True)
 
+    st.markdown('<div class="section-header">SLOB Portfolio Matrix</div>', unsafe_allow_html=True)
+    matrix_df = data.copy()
+    impact_map = {"Low": 1, "Medium": 2, "High": 3}
+    effort_map = {"Low": 1, "Medium": 2, "High": 3}
+    matrix_df["Impact_Score"] = matrix_df["Impact"].map(impact_map).fillna(1)
+    matrix_df["Effort_Score"] = matrix_df["Effort"].map(effort_map).fillna(1)
+    fig_matrix = px.scatter(
+        matrix_df,
+        x="Effort_Score",
+        y="Impact_Score",
+        size="Inventory_Value",
+        color="Risk_Level",
+        hover_data=["SKU","Description","Plant","Impact_Effort_Rank","Proposed_Action"],
+        title="Impact / effort portfolio by inventory value"
+    )
+    fig_matrix.update_xaxes(tickvals=[1,2,3], ticktext=["Low effort","Medium effort","High effort"], range=[0.5,3.5])
+    fig_matrix.update_yaxes(tickvals=[1,2,3], ticktext=["Low impact","Medium impact","High impact"], range=[0.5,3.5])
+    fig_matrix.update_layout(template="plotly_white", height=470, margin=dict(l=20,r=20,t=55,b=20))
+    st.plotly_chart(fig_matrix, use_container_width=True)
+
     st.markdown('<div class="section-header">Top Priority Actions</div>', unsafe_allow_html=True)
     for _, r in data.head(6).iterrows():
         st.markdown(f"""
-        <div class="card">
-          <div>{risk_badge(r['Risk_Level'])} <span class="badge rank">{r['Impact_Effort_Rank']}</span> <span class="badge assess">{r['Assessment_Code']}</span></div>
-          <div class="card-title">{r['SKU']} — {r['Description']}</div>
-          <div class="card-sub">{r['Plant']} · {r['Material_Type']} · {r['Product_Family']} · Value ${r['Inventory_Value']:,.0f} · Shelf life {r['Remaining_Shelf_Life_Days']:,.0f} days · Status {r['Assessment_Status']}</div>
-          <div class="insight"><b>AI insight:</b> {r['AI_Insight']}</div>
-          <div class="warn"><b>Action code proposed:</b> {r['Action_Code_Proposed']} · <b>Dept:</b> {r['Action_Department']} · <b>Reason:</b> {r['Reason_Code']}<br><b>Business action:</b> {r['Proposed_Action']}</div>
+        <div class="decision-card">
+          <div>{risk_badge(r['Risk_Level'])} <span class="badge rank">{r['Impact_Effort_Rank']}</span> <span class="badge assess">{r['Assessment_Code']}</span> <span class="badge-dark badge">Score {r['Risk_Score']}</span></div>
+          <div class="decision-title">{r['SKU']} — {r['Description']}</div>
+          <div class="decision-meta">{r['Plant']} · {r['Material_Type']} · {r['Product_Family']} · Value ${r['Inventory_Value']:,.0f} · Shelf life {r['Remaining_Shelf_Life_Days']:,.0f} days · Prevention {r['Prevention_Risk_Level']} / {r['Prevention_Score_90D']}</div>
+          <div class="insight"><b>Decision insight:</b> {r['AI_Insight']}</div>
+          <div class="warn"><b>Next action:</b> {r['Action_Code_Proposed']} · <b>Owner:</b> {r['Action_Department']} · <b>Reason:</b> {r['Reason_Code']}<br><b>Recommended move:</b> {r['Proposed_Action']}</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -879,8 +1021,8 @@ elif view == "SLOB Action List":
 
 
 elif view == "Insight Chatbot":
-    st.markdown('<div class="section-header">SLOB Insight Chatbot</div>', unsafe_allow_html=True)
-    st.markdown('<div class="small-muted">Ask questions about the uploaded SLOB dataset. This built-in mode answers from calculated app data and does not send data to any external AI model.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Insight Chatbot</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-kicker">Ask questions about SLOB risk, prevention, reason codes, master data and SKU-level decisions. Built-in mode answers only from calculated app data.</div>', unsafe_allow_html=True)
 
     st.markdown("""
     <div class="card">
@@ -1146,6 +1288,20 @@ elif view == "Mass Upload Export":
 
     upload = make_mass_upload(data, due_date, comment_prefix, active_only)
     validation = validate_mass_upload(upload)
+
+    issue_count = len(validation)
+    total_rows = max(len(upload), 1)
+    readiness_score = max(0, min(100, round(100 - (issue_count / total_rows * 25))))
+    readiness_label = "Ready for review" if validation.empty else "Blocked by validation issues"
+
+    st.markdown(f"""
+    <div class="card">
+      <div class="card-title">SAP Upload Readiness</div>
+      <div class="metric-value">{readiness_score}%</div>
+      <div class="readiness-wrap"><div class="readiness-bar" style="width:{readiness_score}%"></div></div>
+      <div class="card-sub">{readiness_label} · {len(upload)} record(s) · {issue_count} validation issue(s)</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if validation.empty:
         st.success("Validation passed: no missing mandatory fields, no past due dates, and no forced MANUAL_REVIEW reason codes.")

@@ -67,3 +67,20 @@ Current mode:
 Future enterprise mode:
 - Can be connected to Azure OpenAI or the company's internal ChatGPT endpoint after IT approval
 - The built-in mode should remain as the governance-safe fallback
+
+
+## Premium UI upgrade
+
+This update improves the app presentation layer:
+- premium enterprise design system
+- darker command-center header
+- cleaner sidebar navigation
+- executive KPI cards with decision language
+- upload empty-state experience
+- Power BI-style chart framing
+- SLOB portfolio matrix
+- decision cards for top priorities
+- SAP upload readiness score
+- improved status badges and governance callouts
+
+Business logic and SLOB governance rules remain unchanged from the previous version.
