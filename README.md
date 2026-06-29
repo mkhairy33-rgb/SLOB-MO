@@ -1,32 +1,32 @@
-# SLOB MRP Intelligence
+# SLOB MRP Intelligence — Reason Code Aligned Update
 
-Streamlit prototype for SAP/MRP-style SLOB optimization.
+This version adds the discard reason-code library captured from the provided screenshots and integrates it into the SLOB Toolkit-aligned prototype.
 
-## What it analyzes
-- Inventory value
-- Unrestricted stock
-- Allocated stock
-- Blocked / QI stock
-- Shelf life
-- Forecast
-- Demand
-- Average consumption
-- MOQ
-- Lead time
-- Customer count
-- Material status
+## Added functionality
+- Discard Reason Code Library page
+- Suggested discard reason code per SKU / batch record
+- Conservative reason-code recommendation logic
+- Manual review flag when the tool cannot safely assign a reason code
+- Reason-code fields in SLOB Action List
+- Reason-code details in SKU Deep Dive
+- SLOB Mass Upload Export draft with:
+  - Plant
+  - Material
+  - Batch
+  - Assessment Code
+  - Reason Code
+  - Action Code
+  - Action Department
+  - Action Due Date
+  - Comment
 
-## Outputs
-- Risk level per SKU
-- Risk score
-- Risk drivers
-- Proposed action
-- Owner suggestion
-- Impact / effort ranking
-- Ranked action list
-- Executive control tower
+## Deployment
+Upload these files to GitHub:
+- app.py
+- requirements.txt
+- README.md
 
-## Deploy on Streamlit
-Repository: your GitHub repo  
-Branch: main  
-Main file path: app.py
+Then reboot the Streamlit app.
+
+## Important validation note
+The reason-code auto-suggestion is intentionally conservative. It assigns a code only when the available data provides a clear signal; otherwise it returns MANUAL_REVIEW so the planner can select the correct code before SAP upload.
