@@ -30,3 +30,26 @@ Then reboot the Streamlit app.
 
 ## Important validation note
 The reason-code auto-suggestion is intentionally conservative. It assigns a code only when the available data provides a clear signal; otherwise it returns MANUAL_REVIEW so the planner can select the correct code before SAP upload.
+
+## Control Tower Graphs
+
+This update adds Power BI-style visual charts for SLOB category risk, risk level split, impact/effort ranking, proposed action codes, SKU count by category, and discard reason-code category.
+
+
+## Full prevention upgrade
+
+Added:
+- AI Executive Summary
+- Power BI-style Control Tower charts
+- Early Warning Radar
+- Prevention Score
+- Master Data Health Check
+- Calculation Trace
+- Blanket Contract overstatement advisory
+- Action Cockpit
+- Policy Table Simulator
+- What-If Simulator
+- Root-Cause Pareto
+- Mass-upload validation
+
+Governance: this app is a decision-support layer. Final SLOB review updates must follow the official SLOB review process, reason-code/action-code policy, and responsible owner validation.
