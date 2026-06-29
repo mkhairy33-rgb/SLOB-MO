@@ -53,3 +53,17 @@ Added:
 - Mass-upload validation
 
 Governance: this app is a decision-support layer. Final SLOB review updates must follow the official SLOB review process, reason-code/action-code policy, and responsible owner validation.
+
+
+## Insight Chatbot
+
+This update adds an in-app SLOB Insight Chatbot.
+
+Current mode:
+- Answers from the uploaded dataset and calculated SLOB fields
+- Does not send data to an external AI model
+- Supports executive summary, top risks, quick wins, prevention risks, CHECK_DATA, reason-code review, root-cause Pareto, overdue actions, blanket contract advisories, and SKU deep dives
+
+Future enterprise mode:
+- Can be connected to Azure OpenAI or the company's internal ChatGPT endpoint after IT approval
+- The built-in mode should remain as the governance-safe fallback

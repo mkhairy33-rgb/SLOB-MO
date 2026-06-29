@@ -575,6 +575,130 @@ def make_mass_upload(data, due_date, comment_prefix, active_only=True):
         "Comment": export_df.apply(lambda r: f"{comment_prefix}: {r['AI_Insight']}", axis=1)
     })
 
+def answer_slob_question(question, data):
+    q = question.lower().strip()
+
+    if data.empty:
+        return "No data is loaded. Upload a file or use the sample dataset first."
+
+    total_value = data["Inventory_Value"].sum()
+    active_value = data.loc[data["Assessment_Status"] == "ACTIVE", "Inventory_Value"].sum()
+    high_risk = data[data["Risk_Level"] == "High"].sort_values("Inventory_Value", ascending=False)
+    quick_wins = data[data["Impact_Effort_Rank"] == "Low Effort / High Impact"].sort_values("Inventory_Value", ascending=False)
+    prevention = data[data["Prevention_Risk_Level"] == "High"].sort_values("Prevention_Score_90D", ascending=False)
+    check_data = data[data["Master_Data_Status"] == "CHECK_DATA"]
+    manual_review = data[data["Suggested_Discard_Reason_Code"] == "MANUAL_REVIEW"]
+    overdue = data[data["Overdue_Action"] == True] if "Overdue_Action" in data.columns else pd.DataFrame()
+
+    def top_list(df, value_col="Inventory_Value", n=5):
+        if df.empty:
+            return "None identified."
+        lines = []
+        for _, r in df.head(n).iterrows():
+            lines.append(f"- {r['SKU']} — {r['Description']} | ${r[value_col]:,.0f} | {r['AI_Insight']}")
+        return "\n".join(lines)
+
+    if any(term in q for term in ["summary", "summarize", "overview", "executive"]):
+        return (
+            f"Executive summary:\n"
+            f"- Total visible inventory value: ${total_value:,.0f}\n"
+            f"- Active SLOB risk value: ${active_value:,.0f}\n"
+            f"- High-risk SKU count: {len(high_risk)}\n"
+            f"- Low-effort / high-impact opportunities: {len(quick_wins)}\n"
+            f"- High early-warning SKUs: {len(prevention)}\n"
+            f"- CHECK_DATA records: {len(check_data)}\n"
+            f"- Manual reason-code review records: {len(manual_review)}\n\n"
+            f"Top priority SKUs:\n{top_list(data.sort_values('Priority_Sort'), n=5)}"
+        )
+
+    if any(term in q for term in ["quick win", "low effort", "high impact"]):
+        return f"Low-effort / high-impact opportunities:\n{top_list(quick_wins, n=10)}"
+
+    if any(term in q for term in ["highest risk", "high risk", "top risk", "risk sku"]):
+        return f"Highest-risk SKUs by inventory value:\n{top_list(high_risk, n=10)}"
+
+    if any(term in q for term in ["early warning", "prevent", "prevention", "anticipate", "future slob"]):
+        return f"Early-warning SKUs:\n{top_list(prevention, n=10)}"
+
+    if any(term in q for term in ["master data", "check data", "data issue", "data quality"]):
+        if check_data.empty:
+            return "No CHECK_DATA records detected from the uploaded file."
+        rows = []
+        for _, r in check_data.head(15).iterrows():
+            rows.append(f"- {r['SKU']} — {r['Description']} | Issue: {r['Master_Data_Checks']}")
+        return "Master data / CHECK_DATA records:\n" + "\n".join(rows)
+
+    if any(term in q for term in ["reason code", "manual review", "discard reason"]):
+        if manual_review.empty:
+            return "No records require MANUAL_REVIEW for discard reason code based on the current conservative logic."
+        rows = []
+        for _, r in manual_review.head(15).iterrows():
+            rows.append(f"- {r['SKU']} — {r['Description']} | Suggested reason: {r['Suggested_Discard_Reason_Code']} | Driver: {r['Risk_Drivers']}")
+        return "Records requiring manual reason-code review:\n" + "\n".join(rows)
+
+    if any(term in q for term in ["overdue", "late action", "past due"]):
+        if overdue.empty:
+            return "No overdue actions detected from the current action due-date fields."
+        rows = []
+        for _, r in overdue.head(15).iterrows():
+            rows.append(f"- {r['SKU']} — {r['Description']} | Action: {r['Action_Code_Proposed']} | Dept: {r['Action_Department']} | Due: {r['Current_Action_Due_Date']}")
+        return "Overdue actions:\n" + "\n".join(rows)
+
+    if any(term in q for term in ["blanket", "contract"]):
+        blanket = data[data["Potential_Excess_Overstatement_Value"] > 0].sort_values("Potential_Excess_Overstatement_Value", ascending=False)
+        if blanket.empty:
+            return "No blanket-contract overstatement warning detected from the uploaded file."
+        rows = []
+        for _, r in blanket.head(15).iterrows():
+            rows.append(f"- {r['SKU']} — {r['Description']} | Potential excess overstatement: ${r['Potential_Excess_Overstatement_Value']:,.0f} | Blanket qty: {r['Blanket_Contract_Remaining_Qty']:,.0f}")
+        return "Blanket-contract advisory records:\n" + "\n".join(rows)
+
+    if any(term in q for term in ["pareto", "root cause", "why", "driver"]):
+        pareto = data.groupby("Suggested_Discard_Reason_Category", as_index=False).agg(
+            Inventory_Value=("Inventory_Value", "sum"),
+            SKU_Count=("SKU", "count")
+        ).sort_values("Inventory_Value", ascending=False)
+        rows = []
+        for _, r in pareto.head(10).iterrows():
+            rows.append(f"- {r['Suggested_Discard_Reason_Category']}: ${r['Inventory_Value']:,.0f} across {int(r['SKU_Count'])} SKU(s)")
+        return "Root-cause Pareto by discard reason category:\n" + "\n".join(rows)
+
+    # SKU-specific questions
+    sku_matches = []
+    for sku in data["SKU"].astype(str).unique():
+        if sku.lower() in q:
+            sku_matches.append(sku)
+
+    if sku_matches:
+        sku = sku_matches[0]
+        r = data[data["SKU"].astype(str).str.lower() == sku.lower()].iloc[0]
+        return (
+            f"SKU deep-dive: {r['SKU']} — {r['Description']}\n"
+            f"- Plant: {r['Plant']}\n"
+            f"- Risk level / score: {r['Risk_Level']} / {r['Risk_Score']}\n"
+            f"- Inventory value: ${r['Inventory_Value']:,.0f}\n"
+            f"- Assessment: {r['Assessment_Code']} | Status: {r['Assessment_Status']}\n"
+            f"- Proposed action code: {r['Action_Code_Proposed']}\n"
+            f"- Suggested reason code: {r['Suggested_Discard_Reason_Code']} — {r['Suggested_Discard_Reason']}\n"
+            f"- Prevention score: {r['Prevention_Score_90D']} | {r['Prevention_Risk_Level']}\n"
+            f"- Proposed action: {r['Proposed_Action']}\n"
+            f"- Preventive action: {r['Preventive_Action']}\n"
+            f"- Master data status: {r['Master_Data_Status']} — {r['Master_Data_Checks']}\n\n"
+            f"Calculation trace:\n{r['Calculation_Trace']}"
+        )
+
+    return (
+        "I can answer questions about the uploaded SLOB dataset. Try asking:\n"
+        "- Give me the executive summary\n"
+        "- What are the top high-risk SKUs?\n"
+        "- What are the low-effort high-impact opportunities?\n"
+        "- Which SKUs are early warning risks?\n"
+        "- Which records need CHECK_DATA?\n"
+        "- Which records need manual reason-code review?\n"
+        "- Show the root-cause Pareto\n"
+        "- Explain SKU GJ-40"
+    )
+
 st.markdown("""
 <div class="hero">
   <h1>SLOB MRP Intelligence</h1>
@@ -594,6 +718,7 @@ view = st.sidebar.radio("View", [
     "Policy Simulator",
     "What-If Simulator",
     "Root Cause Pareto",
+    "Insight Chatbot",
     "SKU Deep Dive",
     "SLOB Category Review",
     "Discard Reason Code Library",
@@ -751,6 +876,50 @@ elif view == "SLOB Action List":
             "Impact_Effort_Rank","Proposed_Action","AI_Insight"]
     st.dataframe(filtered[cols], use_container_width=True, hide_index=True)
     st.download_button("Export SLOB action list", filtered.to_csv(index=False).encode("utf-8"), "slob_toolkit_aligned_action_list.csv", "text/csv", use_container_width=True)
+
+
+elif view == "Insight Chatbot":
+    st.markdown('<div class="section-header">SLOB Insight Chatbot</div>', unsafe_allow_html=True)
+    st.markdown('<div class="small-muted">Ask questions about the uploaded SLOB dataset. This built-in mode answers from calculated app data and does not send data to any external AI model.</div>', unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="card">
+      <div class="card-title">Suggested questions</div>
+      <div>
+        <span class="kpi-pill">Give me the executive summary</span>
+        <span class="kpi-pill">What are the top high-risk SKUs?</span>
+        <span class="kpi-pill">What are the low-effort high-impact opportunities?</span>
+        <span class="kpi-pill">Which SKUs are early-warning risks?</span>
+        <span class="kpi-pill">Which records need CHECK_DATA?</span>
+        <span class="kpi-pill">Show the root-cause Pareto</span>
+        <span class="kpi-pill">Explain SKU GJ-40</span>
+      </div>
+      <div class="warn"><b>Governance guardrail:</b> Chatbot answers are decision-support only. Final SLOB review, reason code, action code, and discard decisions must follow the official process and responsible owner validation.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if "slob_chat_messages" not in st.session_state:
+        st.session_state.slob_chat_messages = []
+
+    for msg in st.session_state.slob_chat_messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    prompt = st.chat_input("Ask about SLOB risk, quick wins, reason codes, master data, prevention, or a specific SKU...")
+
+    if prompt:
+        st.session_state.slob_chat_messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        response = answer_slob_question(prompt, data)
+        st.session_state.slob_chat_messages.append({"role": "assistant", "content": response})
+        with st.chat_message("assistant"):
+            st.markdown(response)
+
+    st.divider()
+    st.markdown("#### Optional enterprise AI connection")
+    st.info("For a true generative chatbot, IT can connect this page to Azure OpenAI or your internal company ChatGPT endpoint. Keep the current rule-based mode as the governance-safe fallback.")
 
 elif view == "SKU Deep Dive":
     st.markdown('<div class="section-header">SKU Deep Dive</div>', unsafe_allow_html=True)
