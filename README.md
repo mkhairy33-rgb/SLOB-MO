@@ -1,19 +1,32 @@
+# SLOB MRP Intelligence
 
-# SLOB Intelligence Copilot — Professional UI Prototype
+Streamlit prototype for SAP/MRP-style SLOB optimization.
 
-## Purpose
-A polished Streamlit prototype for planners and customer care to enter a customer order, check SLOB inventory, and receive ranked recommendations.
+## What it analyzes
+- Inventory value
+- Unrestricted stock
+- Allocated stock
+- Blocked / QI stock
+- Shelf life
+- Forecast
+- Demand
+- Average consumption
+- MOQ
+- Lead time
+- Customer count
+- Material status
 
-## Run locally
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
+## Outputs
+- Risk level per SKU
+- Risk score
+- Risk drivers
+- Proposed action
+- Owner suggestion
+- Impact / effort ranking
+- Ranked action list
+- Executive control tower
 
-## Included workflows
-- Single Order Copilot
-- Inventory Control Tower
-- Rule Library
-
-## Production recommendation
-Convert this into Power Apps + Dataverse + Azure OpenAI for secure internal use.
+## Deploy on Streamlit
+Repository: your GitHub repo  
+Branch: main  
+Main file path: app.py

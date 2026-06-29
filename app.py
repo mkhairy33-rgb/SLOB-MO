@@ -1,547 +1,271 @@
 
 import streamlit as st
 import pandas as pd
-from datetime import date
-from io import BytesIO
+import numpy as np
 
-st.set_page_config(
-    page_title="SLOB Intelligence Copilot",
-    page_icon="📦",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# -----------------------------
-# Styling
-# -----------------------------
+st.set_page_config(page_title="SLOB MRP Intelligence", page_icon="📊", layout="wide")
 
 st.markdown("""
 <style>
-:root {
-    --bg: #0F172A;
-    --panel: #111827;
-    --panel2: #1F2937;
-    --muted: #94A3B8;
-    --text: #F8FAFC;
-    --line: rgba(148, 163, 184, 0.22);
-    --green: #16A34A;
-    --yellow: #D97706;
-    --red: #DC2626;
-    --blue: #2563EB;
-    --cyan: #06B6D4;
-}
-.block-container {
-    padding-top: 1.2rem;
-    padding-bottom: 2rem;
-}
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0F172A 0%, #111827 100%);
-}
-[data-testid="stSidebar"] * {
-    color: #E5E7EB;
-}
-.hero {
-    background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #312E81 100%);
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    border-radius: 24px;
-    padding: 28px 32px;
-    margin-bottom: 20px;
-    color: white;
-}
-.hero h1 {
-    font-size: 2.1rem;
-    margin-bottom: 0.25rem;
-    letter-spacing: -0.02em;
-}
-.hero p {
-    color: #CBD5E1;
-    font-size: 1rem;
-    margin-bottom: 0;
-}
-.metric-card {
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
-    border-radius: 18px;
-    padding: 18px 18px;
-    min-height: 118px;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-}
-.metric-label {
-    color: #64748B;
-    font-size: 0.82rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-}
-.metric-value {
-    color: #0F172A;
-    font-size: 1.85rem;
-    font-weight: 800;
-    margin-top: 6px;
-}
-.metric-sub {
-    color: #64748B;
-    font-size: .86rem;
-    margin-top: 2px;
-}
-.card {
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    background: #FFFFFF;
-    border-radius: 20px;
-    padding: 18px 20px;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-    margin-bottom: 14px;
-}
-.card-title {
-    font-size: 1.05rem;
-    font-weight: 800;
-    color: #0F172A;
-    margin-bottom: 4px;
-}
-.card-subtitle {
-    font-size: .9rem;
-    color: #64748B;
-    margin-bottom: 12px;
-}
-.badge {
-    display: inline-block;
-    border-radius: 999px;
-    padding: 5px 11px;
-    font-size: .78rem;
-    font-weight: 800;
-    letter-spacing: .02em;
-}
-.badge-green {
-    color: #14532D;
-    background: #DCFCE7;
-    border: 1px solid #86EFAC;
-}
-.badge-yellow {
-    color: #78350F;
-    background: #FEF3C7;
-    border: 1px solid #FCD34D;
-}
-.badge-red {
-    color: #7F1D1D;
-    background: #FEE2E2;
-    border: 1px solid #FCA5A5;
-}
-.action-box {
-    border-left: 5px solid #2563EB;
-    background: #EFF6FF;
-    color: #1E3A8A;
-    padding: 14px 16px;
-    border-radius: 12px;
-    margin-top: 10px;
-}
-.risk-box {
-    border-left: 5px solid #D97706;
-    background: #FFFBEB;
-    color: #78350F;
-    padding: 14px 16px;
-    border-radius: 12px;
-    margin-top: 10px;
-}
-.small-muted {
-    color: #64748B;
-    font-size: .85rem;
-}
-.section-header {
-    color: #0F172A;
-    font-size: 1.35rem;
-    font-weight: 850;
-    margin-top: 10px;
-    margin-bottom: 4px;
-}
-.stButton > button {
-    border-radius: 12px;
-    font-weight: 800;
-    height: 3rem;
-}
-div[data-testid="stDataFrame"] {
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    border-radius: 16px;
-    overflow: hidden;
-}
+.block-container {padding-top:1.2rem;}
+.hero{background:linear-gradient(135deg,#0f172a,#1e293b,#172554);border-radius:24px;padding:30px 34px;margin-bottom:20px;color:white}
+.hero h1{font-size:2.1rem;margin-bottom:.2rem}.hero p{color:#cbd5e1;margin:0}
+.metric-card{background:#fff;border:1px solid #dbe3ef;border-radius:18px;padding:18px;min-height:115px;box-shadow:0 8px 22px rgba(15,23,42,.06)}
+.metric-label{color:#64748b;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.metric-value{color:#0f172a;font-size:1.7rem;font-weight:900;margin-top:6px}.metric-sub{color:#64748b;font-size:.85rem}
+.card{background:#fff;border:1px solid #dbe3ef;border-radius:20px;padding:18px 20px;box-shadow:0 8px 22px rgba(15,23,42,.05);margin-bottom:12px}
+.card-title{font-weight:900;font-size:1.08rem;color:#0f172a;margin-top:10px}.card-sub{color:#64748b;font-size:.9rem;margin-bottom:10px}
+.badge{display:inline-block;padding:5px 11px;border-radius:999px;font-size:.76rem;font-weight:900}
+.high{color:#7f1d1d;background:#fee2e2;border:1px solid #fca5a5}.med{color:#78350f;background:#fef3c7;border:1px solid #fcd34d}
+.low{color:#14532d;background:#dcfce7;border:1px solid #86efac}.rank{color:#1e3a8a;background:#dbeafe;border:1px solid #93c5fd}
+.section-header{font-size:1.35rem;font-weight:900;color:#0f172a;margin-top:10px}.small-muted{color:#64748b;font-size:.88rem;margin-bottom:12px}
+.insight{border-left:5px solid #2563eb;background:#eff6ff;color:#1e3a8a;padding:13px 15px;border-radius:12px;margin-top:10px}
+.warn{border-left:5px solid #d97706;background:#fffbeb;color:#78350f;padding:13px 15px;border-radius:12px;margin-top:10px}
+.stButton > button{border-radius:12px;height:3rem;font-weight:900}
 </style>
 """, unsafe_allow_html=True)
 
-# -----------------------------
-# Sample data
-# -----------------------------
+REQUIRED_COLUMNS = [
+    "Plant","SKU","Description","Product_Family","Unrestricted_Stock","Allocated_Stock","Blocked_Stock","QI_Stock","UOM",
+    "Inventory_Value","Total_Shelf_Life_Days","Remaining_Shelf_Life_Days","Expiry_Date",
+    "Forecast_30D","Forecast_90D","Demand_30D","Demand_90D","Avg_Monthly_Consumption",
+    "Open_PO_Qty","Open_Production_Qty","MOQ","Lead_Time_Days","Customer_Count","Material_Status"
+]
 
 @st.cache_data
-def load_sample_data():
-    inventory = pd.DataFrame([
-        ["GJ-40", "Garlic Juice 40%", "GJ24088", "Garlic Juice", 900, "kg", "2025-11-01", "2026-08-15", "Released", "CS-A1", "Tote", 12400, "None", "Conventional", "At Risk"],
-        ["GJ-40", "Garlic Juice 40%", "GJ24091", "Garlic Juice", 600, "kg", "2025-12-05", "2026-12-30", "Released", "CS-A2", "Drum", 8500, "None", "Conventional", "Slow Moving"],
-        ["GJ-45", "Garlic Juice 45%", "GJ45012", "Garlic Juice", 1000, "kg", "2025-10-20", "2026-09-10", "Released", "CS-B1", "Tote", 15000, "None", "Conventional", "At Risk"],
-        ["OJ-65", "Onion Concentrate 65%", "OJ65021", "Onion Concentrate", 700, "kg", "2025-09-15", "2026-07-20", "Released", "CS-C1", "Tote", 9800, "None", "Conventional", "At Risk"],
-        ["GJ-40", "Garlic Juice 40% QA Hold", "GJ99999", "Garlic Juice", 500, "kg", "2025-08-01", "2026-10-01", "Blocked", "CS-QA", "Tote", 6500, "None", "Conventional", "Blocked"],
-    ], columns=[
-        "Material_Code", "Material_Description", "Batch_Number", "Product_Family", "Available_Qty", "UOM",
-        "Manufacturing_Date", "Expiry_Date", "Quality_Status", "Storage_Location", "Packaging_Format",
-        "Inventory_Value", "Allergen_Status", "Claims_Certifications", "SLOB_Category"
-    ])
+def sample_data():
+    rows = [
+        ["CS01","GJ-40","Garlic Juice 40%","Garlic Juice",12500,3000,0,0,"kg",187500,540,72,"2026-09-05",1500,5200,2100,6100,1800,0,0,1000,14,4,"Active"],
+        ["CS01","GJ-45","Garlic Juice 45%","Garlic Juice",4200,0,0,0,"kg",67200,540,210,"2027-01-21",300,900,0,400,250,0,0,1000,21,2,"Active"],
+        ["BP01","OJ-65","Onion Concentrate 65%","Onion Concentrate",9800,2500,0,0,"kg",142100,365,45,"2026-08-09",900,2500,700,1800,800,0,0,1500,18,3,"Active"],
+        ["CS01","RP-20","Rosemary Powder 20 mesh","Powder",1800,0,0,0,"kg",54000,720,390,"2027-07-20",800,2600,650,2400,850,0,0,500,28,6,"Active"],
+        ["BP01","GB-A","Garlic Blend A","Blend",7600,1000,500,0,"kg",159600,365,28,"2026-07-23",0,400,0,350,150,0,0,1000,15,1,"Phase-out"],
+        ["CS01","OB-B","Onion Blend B","Blend",5200,0,0,600,"kg",93600,365,160,"2026-12-02",100,300,0,0,80,0,0,1000,15,1,"Active"],
+        ["BP01","GCP-99","Garlic Custom Premix 99","Custom Premix",1100,0,0,0,"kg",39600,365,330,"2027-05-21",0,0,0,0,0,0,0,1000,30,1,"Inactive"],
+        ["CS01","OJ-50","Onion Juice 50%","Onion Juice",6400,4200,0,0,"kg",96000,365,95,"2026-09-28",2500,8100,2200,7600,2600,0,0,1000,12,5,"Active"],
+        ["BP01","GP-10","Garlic Puree 10%","Puree",9000,1000,0,0,"kg",81000,240,38,"2026-08-02",300,900,250,700,320,0,0,1000,10,2,"Active"],
+        ["CS01","SPC-01","Special Customer SKU 01","Custom Premix",3500,0,0,0,"kg",87500,365,260,"2027-03-12",0,0,0,0,0,0,0,1000,25,1,"Active"],
+    ]
+    return pd.DataFrame(rows, columns=REQUIRED_COLUMNS)
 
-    equiv = pd.DataFrame([
-        ["GJ-40", "GJ-40", "Direct substitute", "No", "Yes", "No", "No", "Same material"],
-        ["GJ-40", "GJ-45", "Can be blended", "Yes", "No", "Yes", "Yes", "Potential concentration adjustment required"],
-        ["OJ-65", "OJ-65", "Direct substitute", "No", "Yes", "No", "No", "Same material"],
-    ], columns=[
-        "Required_Material_Code", "Alternative_Material_Code", "Equivalency_Type", "Can_Blend", "Can_Repack",
-        "QA_Approval_Required", "Customer_Approval_Required", "Comments"
-    ])
+def safe_div(a,b):
+    if b == 0 or pd.isna(b):
+        return np.nan
+    return a / b
 
-    restrictions = pd.DataFrame([
-        ["CUST-001", "Example Customer", "GJ-40", 90, "Tote", "Conventional", "", "None", "No", "Standard customer"],
-        ["CUST-002", "Strict Customer", "GJ-40", 180, "Drum", "Conventional", "", "None", "Yes", "Customer approval required for substitutions"],
-    ], columns=[
-        "Customer_Code", "Customer_Name", "Material_Code", "Minimum_Shelf_Life_Days", "Allowed_Packaging",
-        "Allowed_Claims", "Disallowed_Claims", "Allergen_Restrictions", "Requires_Customer_Approval", "Special_Notes"
-    ])
-    return inventory, equiv, restrictions
+def classify_risk(row):
+    risk_points, drivers = 0, []
+    status = str(row["Material_Status"]).strip().lower()
+    rem = row["Remaining_Shelf_Life_Days"]
+    value = row["Inventory_Value"]
+    demand90 = row["Demand_90D"]
+    fcst90 = row["Forecast_90D"]
+    coverage = row["Coverage_vs_90D_Demand"]
 
-def normalize(x):
-    return "" if pd.isna(x) else str(x).strip().lower()
+    if status in ["inactive","phase-out","obsolete","blocked"]:
+        risk_points += 35; drivers.append("material status risk")
+    if rem <= 30:
+        risk_points += 35; drivers.append("critical shelf life")
+    elif rem <= 60:
+        risk_points += 28; drivers.append("short shelf life")
+    elif rem <= 90:
+        risk_points += 20; drivers.append("approaching shelf-life risk")
+    if demand90 <= 0 and fcst90 <= 0:
+        risk_points += 30; drivers.append("no demand or forecast")
+    elif not pd.isna(coverage) and coverage > 2:
+        risk_points += 25; drivers.append("stock exceeds 2x 90-day demand/forecast")
+    elif not pd.isna(coverage) and coverage > 1.2:
+        risk_points += 15; drivers.append("stock exceeds 90-day demand/forecast")
+    if value >= 100000:
+        risk_points += 15; drivers.append("high inventory value")
+    elif value >= 50000:
+        risk_points += 10; drivers.append("material value exposure")
+    if row["Blocked_Stock"] > 0 or row["QI_Stock"] > 0:
+        risk_points += 8; drivers.append("blocked/QI stock present")
 
-def calc_days(expiry):
-    try:
-        return (pd.to_datetime(expiry).date() - date.today()).days
-    except Exception:
-        return None
+    level = "High" if risk_points >= 70 else "Medium" if risk_points >= 40 else "Low"
+    return level, min(risk_points, 100), ", ".join(drivers) if drivers else "normal inventory position"
 
-def risk_score(row):
-    days = row.get("Days_to_Expiry", 9999)
-    value = float(row.get("Inventory_Value", 0) or 0)
-    qty = float(row.get("Available_Qty", 0) or 0)
+def proposed_action(row):
+    rem = row["Remaining_Shelf_Life_Days"]
+    net = row["Net_Available_Stock"]
+    demand90 = row["Demand_90D"]
+    fcst90 = row["Forecast_90D"]
+    status = str(row["Material_Status"]).strip().lower()
+    coverage = row["Coverage_vs_90D_Demand"]
 
-    if days is None:
-        base = 20
-    elif days < 0:
-        base = 100
-    elif days <= 30:
-        base = 90
-    elif days <= 60:
-        base = 75
-    elif days <= 90:
-        base = 60
-    elif days <= 180:
-        base = 35
-    else:
-        base = 15
+    if status in ["inactive","phase-out","obsolete"] and demand90 == 0 and fcst90 == 0:
+        return "Escalate for liquidation, substitution, customer proposal, or write-off decision", "Medium", "High" if row["Inventory_Value"] >= 50000 else "Medium"
+    if rem <= 60 and net > 0:
+        return "Prioritize immediate allocation; propose customer pull-in or discounted consumption", "Low", "High"
+    if not pd.isna(coverage) and coverage > 2:
+        return "Freeze new production/procurement; consume existing stock first and review forecast accuracy", "Low", "High" if row["Inventory_Value"] >= 50000 else "Medium"
+    if demand90 > 0 and net > demand90:
+        return "Use stock to cover near-term demand and reduce future planned receipts", "Low", "Medium"
+    if row["Customer_Count"] <= 1 and net > 0:
+        return "Check customer-specific conversion, substitution, or repack opportunity", "Medium", "Medium"
+    if row["Blocked_Stock"] > 0 or row["QI_Stock"] > 0:
+        return "Push QA disposition to release, rework, downgrade, or block for write-off", "Medium", "Medium"
+    return "Monitor in weekly SLOB review; no urgent action required", "Low", "Low"
 
-    return round(base + min(value / 10000, 30) + min(qty / 1000, 10), 1)
+def rank_label(impact, effort):
+    if impact == "High" and effort == "Low": return "Low Effort / High Impact"
+    if impact == "High" and effort == "Medium": return "Medium Effort / High Impact"
+    if impact == "Medium" and effort == "Low": return "Low Effort / Medium Impact"
+    if impact == "Medium" and effort == "Medium": return "Medium Effort / Medium Impact"
+    if impact == "Low" and effort == "Medium": return "Medium Effort / Low Impact"
+    return "Low Effort / Low Impact"
 
-def get_badge(level):
-    if level == "Green":
-        return '<span class="badge badge-green">GREEN — Use</span>'
-    if level == "Yellow":
-        return '<span class="badge badge-yellow">YELLOW — Review</span>'
-    return '<span class="badge badge-red">RED — Blocked</span>'
+def process(df):
+    missing = [c for c in REQUIRED_COLUMNS if c not in df.columns]
+    if missing:
+        return None, missing
 
-def build_recommendations(order, inv, equiv, restrictions):
-    inv = inv.copy()
-    inv["Days_to_Expiry"] = inv["Expiry_Date"].apply(calc_days)
-    inv["SLOB_Priority_Score"] = inv.apply(risk_score, axis=1)
+    d = df.copy()
+    numeric = [c for c in REQUIRED_COLUMNS if c not in ["Plant","SKU","Description","Product_Family","UOM","Expiry_Date","Material_Status"]]
+    for c in numeric:
+        d[c] = pd.to_numeric(d[c], errors="coerce").fillna(0)
 
-    required = normalize(order["Required_Material_Code"])
-    family = normalize(order["Product_Family"])
-    packaging_req = normalize(order["Required_Packaging"])
-    min_shelf = int(order["Minimum_Shelf_Life_Days"])
-    order_qty = float(order["Order_Qty"])
+    d["Net_Available_Stock"] = d["Unrestricted_Stock"] - d["Allocated_Stock"]
+    d["Total_Visible_Stock"] = d["Unrestricted_Stock"] + d["Blocked_Stock"] + d["QI_Stock"]
+    d["Demand_Forecast_90D_Max"] = d[["Demand_90D","Forecast_90D"]].max(axis=1)
+    d["Coverage_vs_90D_Demand"] = d.apply(lambda r: safe_div(r["Net_Available_Stock"], r["Demand_Forecast_90D_Max"]), axis=1)
+    d["Months_of_Coverage"] = d.apply(lambda r: safe_div(r["Net_Available_Stock"], r["Avg_Monthly_Consumption"]), axis=1)
+    d["Excess_vs_90D"] = d.apply(lambda r: max(r["Net_Available_Stock"] - r["Demand_Forecast_90D_Max"], 0), axis=1)
+    d["Excess_Value_Estimate"] = d.apply(lambda r: (r["Excess_vs_90D"] / r["Unrestricted_Stock"] * r["Inventory_Value"]) if r["Unrestricted_Stock"] > 0 else 0, axis=1)
+    d[["Risk_Level","Risk_Score","Risk_Drivers"]] = d.apply(lambda r: pd.Series(classify_risk(r)), axis=1)
+    d[["Proposed_Action","Effort","Impact"]] = d.apply(lambda r: pd.Series(proposed_action(r)), axis=1)
+    d["Impact_Effort_Rank"] = d.apply(lambda r: rank_label(r["Impact"], r["Effort"]), axis=1)
+    rank_score = {"Low Effort / High Impact":1,"Medium Effort / High Impact":2,"Low Effort / Medium Impact":3,"Medium Effort / Medium Impact":4,"Medium Effort / Low Impact":5,"Low Effort / Low Impact":6}
+    d["Priority_Sort"] = d["Impact_Effort_Rank"].map(rank_score).fillna(9)*1000000 - d["Risk_Score"]*1000 - d["Inventory_Value"]
+    d["Owner_Suggestion"] = np.select(
+        [
+            d["Proposed_Action"].str.contains("QA", case=False, na=False),
+            d["Proposed_Action"].str.contains("customer|liquidation|substitution", case=False, na=False),
+            d["Proposed_Action"].str.contains("Freeze|planned receipts|forecast", case=False, na=False)
+        ],
+        ["QA","Customer Care / Commercial","Planner / MRP"],
+        default="Planner"
+    )
+    d["AI_Insight"] = d.apply(lambda r: (
+        f"{r['SKU']} is {r['Risk_Level']} risk. Drivers: {r['Risk_Drivers']}. "
+        f"Net available stock is {r['Net_Available_Stock']:,.0f} {r['UOM']}; shelf life remaining is {r['Remaining_Shelf_Life_Days']:,.0f} days. "
+        f"Recommended action: {r['Proposed_Action']}."
+    ), axis=1)
+    return d.sort_values("Priority_Sort"), []
 
-    alt_map = {}
-    if equiv is not None and not equiv.empty:
-        subset = equiv[equiv["Required_Material_Code"].apply(normalize) == required]
-        for _, r in subset.iterrows():
-            alt_map[normalize(r["Alternative_Material_Code"])] = r.to_dict()
-
-    rows = []
-    for _, b in inv.iterrows():
-        mat = normalize(b["Material_Code"])
-        bfamily = normalize(b["Product_Family"])
-        qstatus = normalize(b["Quality_Status"])
-        bpack = normalize(b["Packaging_Format"])
-        days = b["Days_to_Expiry"]
-        qty = float(b["Available_Qty"])
-
-        reasons, approvals, risks = [], [], []
-        action = "Do not use"
-        level = "Red"
-
-        same = mat == required
-        approved_alt = mat in alt_map
-        same_family = family and family == bfamily
-
-        if days is not None and days < 0:
-            risks.append("Expired")
-        if qstatus not in ["released", "approved", "qa released"]:
-            risks.append(f"Quality status is {b['Quality_Status']}")
-        if not same and not approved_alt and not same_family:
-            risks.append("No material or family match")
-        if qty <= 0:
-            risks.append("No available quantity")
-
-        if risks and ("Expired" in risks or "No material or family match" in risks or any("Quality status" in r for r in risks)):
-            level = "Red"
-            action = "Do not use"
-            explanation = "Blocked because " + "; ".join(risks) + "."
-        else:
-            if same:
-                reasons.append("same material code")
-            elif approved_alt:
-                reasons.append(f"approved alternative: {alt_map[mat].get('Equivalency_Type', '')}")
-                if normalize(alt_map[mat].get("QA_Approval_Required")) == "yes":
-                    approvals.append("QA")
-                if normalize(alt_map[mat].get("Customer_Approval_Required")) == "yes":
-                    approvals.append("Customer")
-            elif same_family:
-                reasons.append("same product family")
-                approvals.append("QA")
-                risks.append("not a direct material match")
-
-            if days is not None and days < min_shelf:
-                approvals.append("Customer / QA")
-                risks.append("below minimum shelf life")
-            else:
-                reasons.append("meets shelf-life requirement")
-
-            if packaging_req and packaging_req != bpack:
-                approvals.append("Warehouse / Planning")
-                risks.append("packaging mismatch")
-                if approved_alt and normalize(alt_map[mat].get("Can_Repack")) == "yes":
-                    action = "Review repack feasibility"
-                else:
-                    action = "Review packaging exception"
-            else:
-                reasons.append("packaging matches")
-
-            coverage = min(qty, order_qty)
-            if qty >= order_qty:
-                reasons.append("can fully cover order")
-            else:
-                reasons.append("can partially cover order")
-                risks.append("partial coverage only")
-
-            if same and not approvals and not risks:
-                level = "Green"
-                action = "Allocate batch first"
-            else:
-                level = "Yellow"
-                if action == "Do not use":
-                    action = "Review and approve before allocation"
-
-            explanation = (
-                f"{level} recommendation. Batch {b['Batch_Number']} can cover {coverage:,.0f} {b['UOM']} "
-                f"against order {order['Order_Number']}. Reasons: {', '.join(reasons)}."
-            )
-            if approvals:
-                explanation += f" Approval needed: {', '.join(sorted(set(approvals)))}."
-            if risks:
-                explanation += f" Risks: {', '.join(sorted(set(risks)))}."
-
-        coverage = min(qty, order_qty) if level in ["Green", "Yellow"] else 0
-        avoided_value = round((coverage / qty) * float(b["Inventory_Value"]), 0) if qty > 0 and level in ["Green", "Yellow"] else 0
-
-        rows.append({
-            "Match": level,
-            "Recommended Action": action,
-            "Batch": b["Batch_Number"],
-            "Material": b["Material_Code"],
-            "Description": b["Material_Description"],
-            "Available Qty": qty,
-            "Coverage Qty": coverage,
-            "UOM": b["UOM"],
-            "Expiry": b["Expiry_Date"],
-            "Days to Expiry": days,
-            "Packaging": b["Packaging_Format"],
-            "Quality": b["Quality_Status"],
-            "Approval Needed": ", ".join(sorted(set(approvals))) if approvals else "None",
-            "Risk": ", ".join(sorted(set(risks))) if risks else "Low",
-            "Priority Score": b["SLOB_Priority_Score"],
-            "Estimated Value Avoided": avoided_value,
-            "AI Explanation": explanation,
-            "Planner Comment": (
-                f"{level} SLOB recommendation for {order['Order_Number']}: {action} using batch {b['Batch_Number']} "
-                f"({b['Material_Code']}) covering {coverage:,.0f} {b['UOM']}. Expiry: {b['Expiry_Date']}."
-            )
-        })
-
-    df = pd.DataFrame(rows)
-    order_map = {"Green": 0, "Yellow": 1, "Red": 2}
-    df["_order"] = df["Match"].map(order_map)
-    return df.sort_values(["_order", "Days to Expiry", "Priority Score"], ascending=[True, True, False]).drop(columns="_order")
-
-# -----------------------------
-# Header
-# -----------------------------
+def risk_badge(level):
+    if level == "High": return '<span class="badge high">HIGH RISK</span>'
+    if level == "Medium": return '<span class="badge med">MEDIUM RISK</span>'
+    return '<span class="badge low">LOW RISK</span>'
 
 st.markdown("""
 <div class="hero">
-    <h1>SLOB Intelligence Copilot</h1>
-    <p>Professional decision-support interface for planners and customer care to convert aging inventory into order fulfillment opportunities.</p>
+  <h1>SLOB MRP Intelligence</h1>
+  <p>SAP/MRP-style SKU risk engine using inventory value, shelf life, forecast, demand, allocated stock, blocked stock, and material status.</p>
 </div>
 """, unsafe_allow_html=True)
 
-# -----------------------------
-# Sidebar
-# -----------------------------
-
-st.sidebar.markdown("## Data Control Center")
-use_sample = st.sidebar.toggle("Use demo dataset", value=True)
-uploaded_inv = st.sidebar.file_uploader("SLOB inventory CSV", type=["csv"])
-uploaded_equiv = st.sidebar.file_uploader("Product equivalency CSV", type=["csv"])
-uploaded_rules = st.sidebar.file_uploader("Customer restrictions CSV", type=["csv"])
-
-sample_inv, sample_equiv, sample_restrictions = load_sample_data()
+st.sidebar.markdown("## Data Input")
+use_sample = st.sidebar.toggle("Use sample SAP/MRP data", value=True)
+uploaded = st.sidebar.file_uploader("Upload SAP SLOB CSV", type=["csv"])
+view = st.sidebar.radio("View", ["Executive Control Tower", "SKU Action List", "SKU Deep Dive", "Data Template"])
 
 if use_sample:
-    inv = sample_inv
-    equiv = sample_equiv
-    restrictions = sample_restrictions
+    raw = sample_data()
+elif uploaded:
+    raw = pd.read_csv(uploaded)
 else:
-    inv = pd.read_csv(uploaded_inv) if uploaded_inv else pd.DataFrame()
-    equiv = pd.read_csv(uploaded_equiv) if uploaded_equiv else pd.DataFrame()
-    restrictions = pd.read_csv(uploaded_rules) if uploaded_rules else pd.DataFrame()
+    raw = pd.DataFrame()
 
-st.sidebar.divider()
-st.sidebar.markdown("### Operating mode")
-mode = st.sidebar.radio(
-    "Select workflow",
-    ["Single Order Copilot", "Inventory Control Tower", "Rule Library"],
-    label_visibility="collapsed"
-)
+if view == "Data Template":
+    st.markdown('<div class="section-header">SAP/MRP SLOB Data Template</div>', unsafe_allow_html=True)
+    st.dataframe(sample_data().head(0), use_container_width=True)
+    st.download_button("Download CSV template", sample_data().head(0).to_csv(index=False).encode("utf-8"), "sap_mrp_slob_template.csv", "text/csv", use_container_width=True)
+    st.markdown("Required columns:")
+    st.code("\n".join(REQUIRED_COLUMNS))
+    st.stop()
 
-# -----------------------------
-# Main tabs
-# -----------------------------
+if raw.empty:
+    st.info("Upload a CSV or activate sample SAP/MRP data.")
+    st.stop()
 
-if mode == "Single Order Copilot":
-    st.markdown('<div class="section-header">Order Intake</div>', unsafe_allow_html=True)
-    st.markdown('<div class="small-muted">Enter the customer order information. The copilot will scan inventory and rank SLOB actions.</div>', unsafe_allow_html=True)
+data, missing = process(raw)
+if missing:
+    st.error("Missing required columns: " + ", ".join(missing))
+    st.stop()
 
-    with st.container():
-        c1, c2, c3, c4 = st.columns(4)
-        with c1:
-            order_number = st.text_input("Order Number", "SO-10045")
-            customer_code = st.text_input("Customer Code", "CUST-001")
-        with c2:
-            customer_name = st.text_input("Customer Name", "Example Customer")
-            required_material = st.text_input("Required Material Code", "GJ-40")
-        with c3:
-            product_family = st.text_input("Product Family", "Garlic Juice")
-            order_qty = st.number_input("Order Quantity", min_value=0.0, value=1200.0, step=100.0)
-        with c4:
-            uom = st.text_input("UOM", "kg")
-            min_shelf = st.number_input("Minimum Shelf Life Days", min_value=0, value=90, step=10)
-            required_packaging = st.text_input("Required Packaging", "Tote")
+if view == "Executive Control Tower":
+    total_value = data["Inventory_Value"].sum()
+    high_value = data.loc[data["Risk_Level"]=="High","Inventory_Value"].sum()
+    excess_value = data["Excess_Value_Estimate"].sum()
+    quick_wins = len(data[data["Impact_Effort_Rank"]=="Low Effort / High Impact"])
+    high_risk = len(data[data["Risk_Level"]=="High"])
 
-    order = {
-        "Order_Number": order_number,
-        "Customer_Code": customer_code,
-        "Customer_Name": customer_name,
-        "Required_Material_Code": required_material,
-        "Product_Family": product_family,
-        "Order_Qty": order_qty,
-        "UOM": uom,
-        "Minimum_Shelf_Life_Days": min_shelf,
-        "Required_Packaging": required_packaging
-    }
+    c1,c2,c3,c4,c5 = st.columns(5)
+    c1.markdown(f'<div class="metric-card"><div class="metric-label">Total Value</div><div class="metric-value">${total_value:,.0f}</div><div class="metric-sub">inventory exposure</div></div>', unsafe_allow_html=True)
+    c2.markdown(f'<div class="metric-card"><div class="metric-label">High Risk Value</div><div class="metric-value">${high_value:,.0f}</div><div class="metric-sub">requires action</div></div>', unsafe_allow_html=True)
+    c3.markdown(f'<div class="metric-card"><div class="metric-label">Excess Value</div><div class="metric-value">${excess_value:,.0f}</div><div class="metric-sub">vs 90-day demand/forecast</div></div>', unsafe_allow_html=True)
+    c4.markdown(f'<div class="metric-card"><div class="metric-label">Quick Wins</div><div class="metric-value">{quick_wins}</div><div class="metric-sub">low effort / high impact</div></div>', unsafe_allow_html=True)
+    c5.markdown(f'<div class="metric-card"><div class="metric-label">High Risk SKUs</div><div class="metric-value">{high_risk}</div><div class="metric-sub">SKU count</div></div>', unsafe_allow_html=True)
 
-    run = st.button("Run SLOB Optimization", type="primary", use_container_width=True)
+    st.markdown('<div class="section-header">Top Priority Actions</div>', unsafe_allow_html=True)
+    for _, r in data.head(6).iterrows():
+        st.markdown(f"""
+        <div class="card">
+          <div>{risk_badge(r['Risk_Level'])} <span class="badge rank">{r['Impact_Effort_Rank']}</span></div>
+          <div class="card-title">{r['SKU']} — {r['Description']}</div>
+          <div class="card-sub">{r['Plant']} · {r['Product_Family']} · Value ${r['Inventory_Value']:,.0f} · Net stock {r['Net_Available_Stock']:,.0f} {r['UOM']} · Shelf life {r['Remaining_Shelf_Life_Days']:,.0f} days</div>
+          <div class="insight"><b>AI insight:</b> {r['AI_Insight']}</div>
+          <div class="warn"><b>Owner:</b> {r['Owner_Suggestion']} · <b>Impact:</b> {r['Impact']} · <b>Effort:</b> {r['Effort']} · <b>Risk drivers:</b> {r['Risk_Drivers']}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    if run:
-        if inv.empty:
-            st.error("Upload SLOB inventory or activate demo dataset.")
-        else:
-            results = build_recommendations(order, inv, equiv, restrictions)
-            good = results[results["Match"].isin(["Green", "Yellow"])]
-            green = (results["Match"] == "Green").sum()
-            yellow = (results["Match"] == "Yellow").sum()
-            red = (results["Match"] == "Red").sum()
-            coverage = good["Coverage Qty"].sum()
-            value = good["Estimated Value Avoided"].sum()
+    st.markdown('<div class="section-header">Impact / Effort Portfolio</div>', unsafe_allow_html=True)
+    summary = data.groupby(["Impact_Effort_Rank","Risk_Level"], as_index=False).agg(
+        SKU_Count=("SKU","count"),
+        Inventory_Value=("Inventory_Value","sum"),
+        Excess_Value=("Excess_Value_Estimate","sum")
+    )
+    st.dataframe(summary, use_container_width=True, hide_index=True)
 
-            m1, m2, m3, m4, m5 = st.columns(5)
-            m1.markdown(f'<div class="metric-card"><div class="metric-label">Green Matches</div><div class="metric-value">{green}</div><div class="metric-sub">Ready to allocate</div></div>', unsafe_allow_html=True)
-            m2.markdown(f'<div class="metric-card"><div class="metric-label">Yellow Opportunities</div><div class="metric-value">{yellow}</div><div class="metric-sub">Needs approval</div></div>', unsafe_allow_html=True)
-            m3.markdown(f'<div class="metric-card"><div class="metric-label">Blocked</div><div class="metric-value">{red}</div><div class="metric-sub">Do not use</div></div>', unsafe_allow_html=True)
-            m4.markdown(f'<div class="metric-card"><div class="metric-label">Potential Coverage</div><div class="metric-value">{coverage:,.0f}</div><div class="metric-sub">{uom}</div></div>', unsafe_allow_html=True)
-            m5.markdown(f'<div class="metric-card"><div class="metric-label">Value Avoided</div><div class="metric-value">${value:,.0f}</div><div class="metric-sub">estimated</div></div>', unsafe_allow_html=True)
+elif view == "SKU Action List":
+    st.markdown('<div class="section-header">Ranked SKU Action List</div>', unsafe_allow_html=True)
+    st.markdown('<div class="small-muted">Sorted low-effort/high-impact first, then risk score and inventory value.</div>', unsafe_allow_html=True)
 
-            st.markdown('<div class="section-header">Executive Recommendation</div>', unsafe_allow_html=True)
-            best = good.head(1)
-            if not best.empty:
-                b = best.iloc[0]
-                st.markdown(f"""
-                <div class="card">
-                    <div>{get_badge(b['Match'])}</div>
-                    <div class="card-title" style="margin-top:12px;">{b['Recommended Action']} — Batch {b['Batch']}</div>
-                    <div class="card-subtitle">{b['Material']} · {b['Description']} · Available {b['Available Qty']:,.0f} {b['UOM']} · Expires {b['Expiry']}</div>
-                    <div class="action-box"><b>AI explanation:</b> {b['AI Explanation']}</div>
-                    <div class="risk-box"><b>Risk / approval:</b> {b['Risk']} · Approval needed: {b['Approval Needed']}</div>
-                </div>
-                """, unsafe_allow_html=True)
-                st.text_area("Planner / Customer Care Comment", b["Planner Comment"], height=90)
-            else:
-                st.warning("No usable SLOB recommendation found for this order.")
+    risks = st.multiselect("Risk level", ["High","Medium","Low"], default=["High","Medium","Low"])
+    ranks = st.multiselect("Impact / effort", list(data["Impact_Effort_Rank"].unique()), default=list(data["Impact_Effort_Rank"].unique()))
+    f = data[data["Risk_Level"].isin(risks) & data["Impact_Effort_Rank"].isin(ranks)]
 
-            st.markdown('<div class="section-header">Ranked Recommendation Table</div>', unsafe_allow_html=True)
-            st.dataframe(
-                results[[
-                    "Match", "Recommended Action", "Batch", "Material", "Available Qty", "Coverage Qty",
-                    "Expiry", "Days to Expiry", "Packaging", "Quality", "Approval Needed",
-                    "Risk", "Priority Score", "Estimated Value Avoided", "AI Explanation"
-                ]],
-                use_container_width=True,
-                hide_index=True
-            )
+    cols = ["Plant","SKU","Description","Product_Family","Risk_Level","Risk_Score","Impact_Effort_Rank",
+            "Inventory_Value","Net_Available_Stock","Allocated_Stock","Remaining_Shelf_Life_Days",
+            "Demand_90D","Forecast_90D","Coverage_vs_90D_Demand","Excess_Value_Estimate",
+            "Proposed_Action","Owner_Suggestion","AI_Insight"]
+    st.dataframe(f[cols], use_container_width=True, hide_index=True)
+    st.download_button("Export ranked action list", f.to_csv(index=False).encode("utf-8"), "ranked_slob_mrp_actions.csv", "text/csv", use_container_width=True)
 
-            csv = results.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                "Export Recommendations",
-                data=csv,
-                file_name=f"SLOB_recommendations_{order_number}.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
+elif view == "SKU Deep Dive":
+    st.markdown('<div class="section-header">SKU Deep Dive</div>', unsafe_allow_html=True)
+    sku = st.selectbox("Select SKU", data["SKU"].tolist())
+    r = data[data["SKU"] == sku].iloc[0]
 
-elif mode == "Inventory Control Tower":
-    st.markdown('<div class="section-header">Inventory Control Tower</div>', unsafe_allow_html=True)
-    if inv.empty:
-        st.info("Upload inventory or use demo dataset.")
-    else:
-        inv2 = inv.copy()
-        inv2["Days_to_Expiry"] = inv2["Expiry_Date"].apply(calc_days)
-        inv2["Priority_Score"] = inv2.apply(risk_score, axis=1)
+    c1,c2,c3,c4 = st.columns(4)
+    c1.markdown(f'<div class="metric-card"><div class="metric-label">Risk Score</div><div class="metric-value">{r["Risk_Score"]:.0f}</div><div class="metric-sub">{r["Risk_Level"]}</div></div>', unsafe_allow_html=True)
+    c2.markdown(f'<div class="metric-card"><div class="metric-label">Inventory Value</div><div class="metric-value">${r["Inventory_Value"]:,.0f}</div><div class="metric-sub">current exposure</div></div>', unsafe_allow_html=True)
+    c3.markdown(f'<div class="metric-card"><div class="metric-label">Net Stock</div><div class="metric-value">{r["Net_Available_Stock"]:,.0f}</div><div class="metric-sub">{r["UOM"]}</div></div>', unsafe_allow_html=True)
+    c4.markdown(f'<div class="metric-card"><div class="metric-label">Shelf Life</div><div class="metric-value">{r["Remaining_Shelf_Life_Days"]:,.0f}</div><div class="metric-sub">days remaining</div></div>', unsafe_allow_html=True)
 
-        total_value = inv2["Inventory_Value"].sum()
-        at_risk_value = inv2[inv2["Days_to_Expiry"] <= 90]["Inventory_Value"].sum()
-        released = (inv2["Quality_Status"].apply(normalize) == "released").sum()
-        blocked = len(inv2) - released
+    st.markdown(f"""
+    <div class="card">
+      <div>{risk_badge(r['Risk_Level'])} <span class="badge rank">{r['Impact_Effort_Rank']}</span></div>
+      <div class="card-title">{r['SKU']} — {r['Description']}</div>
+      <div class="card-sub">{r['Plant']} · {r['Product_Family']} · Material status: {r['Material_Status']}</div>
+      <div class="insight"><b>AI Insight:</b> {r['AI_Insight']}</div>
+      <div class="warn"><b>Proposed action:</b> {r['Proposed_Action']}<br><b>Owner:</b> {r['Owner_Suggestion']} · <b>Impact:</b> {r['Impact']} · <b>Effort:</b> {r['Effort']}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        a, b, c, d = st.columns(4)
-        a.markdown(f'<div class="metric-card"><div class="metric-label">Total SLOB Value</div><div class="metric-value">${total_value:,.0f}</div><div class="metric-sub">all visible batches</div></div>', unsafe_allow_html=True)
-        b.markdown(f'<div class="metric-card"><div class="metric-label">90-Day Risk Value</div><div class="metric-value">${at_risk_value:,.0f}</div><div class="metric-sub">short shelf life</div></div>', unsafe_allow_html=True)
-        c.markdown(f'<div class="metric-card"><div class="metric-label">Released Batches</div><div class="metric-value">{released}</div><div class="metric-sub">usable status</div></div>', unsafe_allow_html=True)
-        d.markdown(f'<div class="metric-card"><div class="metric-label">Blocked / Review</div><div class="metric-value">{blocked}</div><div class="metric-sub">QA attention</div></div>', unsafe_allow_html=True)
+    detail_cols = ["Unrestricted_Stock","Allocated_Stock","Blocked_Stock","QI_Stock","Forecast_30D","Forecast_90D","Demand_30D","Demand_90D","Avg_Monthly_Consumption","Coverage_vs_90D_Demand","Months_of_Coverage","Excess_vs_90D","Excess_Value_Estimate","MOQ","Lead_Time_Days","Customer_Count"]
+    st.dataframe(pd.DataFrame(data.loc[data["SKU"]==sku, detail_cols].iloc[0]).rename(columns={r.name:"Value"}), use_container_width=True)
 
-        st.markdown('<div class="section-header">Priority Batches</div>', unsafe_allow_html=True)
-        st.dataframe(
-            inv2.sort_values("Priority_Score", ascending=False),
-            use_container_width=True,
-            hide_index=True
-        )
-
-else:
-    st.markdown('<div class="section-header">Rule Library</div>', unsafe_allow_html=True)
-    st.markdown('<div class="small-muted">Maintain equivalency and customer restriction rules. In production, this page would be permission-controlled.</div>', unsafe_allow_html=True)
-
-    st.markdown("#### Product Equivalency Rules")
-    st.dataframe(equiv, use_container_width=True, hide_index=True)
-
-    st.markdown("#### Customer Restrictions")
-    st.dataframe(restrictions, use_container_width=True, hide_index=True)
-
-st.caption("Prototype version. For production use, connect to ERP inventory/order tables, Dataverse, and Azure OpenAI with Microsoft Entra ID authentication.")
+st.caption("Prototype for SAP/MRP SLOB decision support. Production version should connect to SAP, demand planning, batch shelf-life data, and Azure OpenAI.")
